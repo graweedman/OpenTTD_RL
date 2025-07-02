@@ -48,6 +48,19 @@ set(CMAKE_CXX_EXTENSIONS NO)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 
+set(OTTD_RL_FILES
+    ${CMAKE_SOURCE_DIR}/src/rl/communication.cpp
+    ${CMAKE_SOURCE_DIR}/src/rl/interface.cpp
+    ${CMAKE_SOURCE_DIR}/src/rl/state.cpp)
+
+# add_library(openttd_rl ${OTTD_RL_FILES})
+# if(MSVC)
+#     set_property(TARGET openttd_rl PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# endif()
+
+# target_link_libraries(openttd_test PRIVATE openttd_rl)
+
+
 # An empty target for the tools
 add_custom_target(tools)
 
@@ -242,6 +255,7 @@ add_executable(openttd_test)
 set_target_properties(openttd PROPERTIES OUTPUT_NAME "${BINARY_NAME}")
 # All other files are added via target_sources()
 
+
 if(MSVC)
     # Add DPI manifest to project; other WIN32 targets get this via ottdres.rc
     target_sources(openttd PRIVATE "${CMAKE_SOURCE_DIR}/os/windows/openttd.manifest")
@@ -254,6 +268,17 @@ if(MSVC)
         set_property(TARGET openttd_test PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
      endif()
 endif()
+
+#  RL interface
+target_include_directories(openttd PRIVATE ${CMAKE_SOURCE_DIR}/src/rl)
+target_sources(openttd PRIVATE
+    # ${CMAKE_SOURCE_DIR}/src/rl/communication.cpp
+    ${OTTD_RL_FILES}
+)
+target_sources(openttd_test PRIVATE
+    # ${CMAKE_SOURCE_DIR}/src/rl/communication.cpp
+    ${OTTD_RL_FILES}
+) 
 
 target_precompile_headers(openttd_lib
     PRIVATE
@@ -280,6 +305,7 @@ target_link_libraries(openttd
     openttd_lib
     openttd::media
     openttd::basesets
+    # openttd_rl
 )
 
 target_link_libraries(openttd_test PRIVATE openttd_lib)
@@ -407,6 +433,7 @@ if(EMSCRIPTEN)
     # Build the .html (which builds the .js, .wasm, and .data too).
     set_target_properties(openttd PROPERTIES SUFFIX ".html")
     target_link_libraries(openttd WASM::WASM)
+    
 endif()
 
 if(NOT PERSONAL_DIR STREQUAL "(not set)")
@@ -428,6 +455,8 @@ if(NOT GLOBAL_DIR STREQUAL "(not set)")
         -DGLOBAL_DATA_DIR="${GLOBAL_DIR}"
     )
 endif()
+
+
 
 link_package(SSE)
 
