@@ -2,16 +2,17 @@
 #define RL_STATE_H
 
 #include "../stdafx.h"
+#include "../tile_type.h"
 #include <vector>
 
-struct State {
+struct RLState {
 	struct CityInfo {
 		int x, y;
 		int population;
 	};
 
 	struct IndustryInfo {
-		int x, y;
+		TileIndex location;
 		int type;
 		int production;
 	};

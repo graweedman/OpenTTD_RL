@@ -81,6 +81,7 @@
 #include "timer/timer_game_tick.h"
 #include "social_integration.h"
 #include "core/string_consumer.hpp"
+#include "rl/interface.h"
 
 #include "linkgraph/linkgraphschedule.h"
 
@@ -110,6 +111,8 @@ extern std::string _config_file;
 bool _save_config = false;
 bool _request_newgrf_scan = false;
 NewGRFScanCallback *_request_newgrf_scan_callback = nullptr;
+
+static RLInterface rl_interface("127.0.0.1", 1111);
 
 /**
  * Error handling for fatal user errors.
@@ -1214,6 +1217,7 @@ void StateGameLoop()
 		StateGameLoop_LinkGraphPauseControl();
 	}
 
+	rl_interface.CollectState(_current_company);
 	/* Don't execute the state loop during pause or when modal windows are open. */
 	if (_pause_mode.Any() || HasModalProgress()) {
 		PerformanceMeasurer::Paused(PFE_GAMELOOP);

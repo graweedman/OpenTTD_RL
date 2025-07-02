@@ -9,9 +9,11 @@
 #include <unistd.h>
 #endif
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
+// #include <iostream>
+// #include "../stdafx.h"
 
 class RLCommunication {
 public:
@@ -19,8 +21,11 @@ public:
 	~RLCommunication();
 
 	bool Connect(const std::string& host, int port);
-	bool Send(const std::vector<float>& data);
-	bool Receive(std::vector<float>& data, int max_size = 4096);
+	bool Send(const std::vector<uint8_t>& data);
+	bool Receive(std::vector<uint8_t>& data, int max_size = 32);
+	
+	bool IsConnected() const { return connected; }
+
 	void Close();
 private:
 #ifdef _WIN32

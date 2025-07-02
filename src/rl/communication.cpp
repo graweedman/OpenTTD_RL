@@ -19,40 +19,38 @@ RLCommunication::~RLCommunication() {
 
 bool RLCommunication::Connect(const std::string &host, int port) {
 #ifdef _WIN32
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock == INVALID_SOCKET) return false;
 #else
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) return false;
 #endif
 	addr = {};
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = inet_addr(host.c_str());
-	memcpy(&this->sock, &addr, sizeof(addr));
 
 	connected = true;
     return true;
 }
 
-bool RLCommunication::Send(const std::vector<float> &data) {
+bool RLCommunication::Send(const std::vector<uint8_t> &data) {
 	if (!connected) return false;
-
 	int bytes = sendto(
 		sock,
 		reinterpret_cast<const char *>(data.data()),
-		static_cast<int>(data.size() * sizeof(float)),
+		static_cast<int>(data.size()),
 		0,
 		(sockaddr *)&addr,
 		sizeof(addr)
 	);
 
-	return bytes == static_cast<int>(data.size() * sizeof(float));
+	return bytes == static_cast<int>(data.size());
 }
 
-bool RLCommunication::Receive(std::vector<float> &data, int max_size) {
+bool RLCommunication::Receive(std::vector<uint8_t> &data, int max_size) {
 	if (!connected) return false;
-	data.resize(max_size / sizeof(float));
+	data.resize(max_size);
 	sockaddr_in from;
 #ifdef _WIN32
 	int fromlen = sizeof(from);
@@ -68,7 +66,7 @@ bool RLCommunication::Receive(std::vector<float> &data, int max_size) {
 		&fromlen
 	);
 	if (bytes < 0) return false;
-	data.resize(bytes / sizeof(float));
+	data.resize(bytes);
 	return true;
 }
 
