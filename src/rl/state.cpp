@@ -2,20 +2,28 @@
 
 std::vector<float> RLState::ToVector() const
 {
-    // std::vector<float> data;
-    // for (const auto& city : cities) {
-    //     data.push_back(static_cast<float>(city.x));
-    //     data.push_back(static_cast<float>(city.y));
-    //     data.push_back(static_cast<float>(city.population));
-    // }
-    // for (const auto& industry : industries) {
-    //     data.push_back(static_cast<float>(industry.location));
-    //     data.push_back(static_cast<float>(industry.type));
-    //     data.push_back(static_cast<float>(industry.production));
-    // }
+    std::vector<float> data;
+    for (const auto& city : cities) {
+        data.push_back(static_cast<float>(city.location.value));
+        data.push_back(static_cast<float>(city.population));
+    }
+    for (const auto& industry : industries) {
+		float tile_as_float = static_cast<float>(industry.location.value);
+        data.push_back(tile_as_float);
+        data.push_back(static_cast<float>(industry.type));
+		data.push_back(static_cast<float>(industry.produced_cargos.size())); // number of produced cargos
+		for (const auto& cargo : industry.produced_cargos) {
+			data.push_back(static_cast<float>(cargo.first)); // cargo type
+			data.push_back(static_cast<float>(cargo.second)); // amount
+		}
+		data.push_back(static_cast<float>(industry.accepted_cargos.size())); // number of accepted cargos
+		for (const auto& cargo : industry.accepted_cargos) {
+			data.push_back(static_cast<float>(cargo)); // cargo type
+		}
+    }
     // data.push_back(static_cast<float>(current_money));
     // data.push_back(static_cast<float>(current_year));
-    return {};
+    return data;
 }
 
 void RLState::FromVector(const std::vector<float> &data)

@@ -21,31 +21,62 @@ bool RLCommunication::Connect(const std::string &host, int port) {
 #ifdef _WIN32
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock == INVALID_SOCKET) return false;
+
+	// Set the socket to non-blocking mode
+	// This is necessary for Windows, as it does not support O_NONBLOCK like POSIX systems
+	u_long mode = 1;
+    ioctlsocket(sock, FIONBIO, &mode);
 #else
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) return false;
+
+	// Set non-blocking mode
+    int flags = fcntl(sock, F_GETFL, 0);
+    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 #endif
 	addr = {};
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = inet_addr(host.c_str());
 
+	sockaddr_in local_addr = {};
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(port);
+    local_addr.sin_addr.s_addr = INADDR_ANY;
+    if (bind(sock, (sockaddr*)&local_addr, sizeof(local_addr)) < 0) {
+        return false;
+    }
+
 	connected = true;
     return true;
 }
 
-bool RLCommunication::Send(const std::vector<uint8_t> &data) {
-	if (!connected) return false;
-	int bytes = sendto(
-		sock,
-		reinterpret_cast<const char *>(data.data()),
-		static_cast<int>(data.size()),
-		0,
-		(sockaddr *)&addr,
-		sizeof(addr)
-	);
+// bool RLCommunication::Send(const std::vector<uint8_t> &data) {
+// 	if (!connected) return false;
+// 	int bytes = sendto(
+// 		sock,
+// 		reinterpret_cast<const char *>(data.data()),
+// 		static_cast<int>(data.size()),
+// 		0,
+// 		(sockaddr *)&addr,
+// 		sizeof(addr)
+// 	);
 
-	return bytes == static_cast<int>(data.size());
+// 	return bytes == static_cast<int>(data.size());
+// }
+
+bool RLCommunication::Send(const std::vector<float> &data) {
+    if (!connected) return false;
+    int bytes = sendto(
+        sock,
+        reinterpret_cast<const char *>(data.data()),
+        static_cast<int>(data.size() * sizeof(float)), // send the correct number of bytes
+        0,
+        (sockaddr *)&addr,
+        sizeof(addr)
+    );
+
+    return bytes == static_cast<int>(data.size() * sizeof(float));
 }
 
 bool RLCommunication::Receive(std::vector<uint8_t> &data, int max_size) {

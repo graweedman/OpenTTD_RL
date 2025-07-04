@@ -9,6 +9,7 @@
 #include "state.h"
 #include "action.h"
 #include "communication.h"
+#include "commands.h"
 
 class RLInterface {
 private:
@@ -21,7 +22,8 @@ public:
 
 	void CollectState(CompanyID current_company); // Collects state data from the game world
 	void SendState(RLState &state); // Sends the collected state data to the RL server
-	void ReceiveAtion();
+	void ReceiveAction();
+	void ExecuteAction(const RLAction &action); // Executes an action received from the RL server
 };
 
 #endif // RL_INTERFACE_H

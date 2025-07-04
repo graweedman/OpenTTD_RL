@@ -22,8 +22,8 @@ public:
 
 	bool Connect(const std::string& host, int port);
 	bool Send(const std::vector<uint8_t>& data);
+	bool Send(const std::vector<float>& data);
 	bool Receive(std::vector<uint8_t>& data, int max_size = 32);
-	
 	bool IsConnected() const { return connected; }
 
 	void Close();

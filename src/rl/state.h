@@ -7,20 +7,21 @@
 
 struct RLState {
 	struct CityInfo {
-		int x, y;
+		TileIndex location;
 		int population;
 	};
 
 	struct IndustryInfo {
 		TileIndex location;
 		int type;
-		int production;
+		std::vector<std::pair<int, int>> produced_cargos; // cargo type indices produced
+		std::vector<int> accepted_cargos; // cargo type indices accepted
 	};
 
 	std::vector<CityInfo> cities;
 	std::vector<IndustryInfo> industries;
 	int current_money;
-	int current_year;
+	// int current_year;
 
 	std::vector<float> ToVector() const;
 	void FromVector(const std::vector<float>& data);
