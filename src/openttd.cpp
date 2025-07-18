@@ -1217,7 +1217,7 @@ void StateGameLoop()
 		StateGameLoop_LinkGraphPauseControl();
 	}
 
-	rl_interface.CollectState(_current_company);
+	// rl_interface.CollectState(_current_company);
 	rl_interface.ReceiveAction();
 	/* Don't execute the state loop during pause or when modal windows are open. */
 	if (_pause_mode.Any() || HasModalProgress()) {

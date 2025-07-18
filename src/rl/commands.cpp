@@ -4,94 +4,120 @@
 #include <optional>
 #include <compare>
 
-bool BuildRoadAtTile(int _tile, int _road_type, int _dir)
+namespace cmd {
+
+
+bool BuildRoadAtTile(Location _tile, uint32_t _dir)
 {
-	TileIndex tile_index = TileIndex(_tile);
-
-
-    return false;
+	TileIndex tile = TileXY(_tile.x, _tile.y);
+	DoCommandFlags flags{};
+	flags.Set(DoCommandFlag::Execute);
+	CommandCost cost = CmdBuildRoad(
+		flags,
+		tile,
+		ROAD_ALL,
+		ROADTYPE_ROAD,
+		DRD_NONE,
+		TownID::Invalid()
+	);
+	return cost.Succeeded();
 }
 
-bool BuildRoadLine(int _start, int _end, int _axis)
+bool BuildRoadLine(Location _start, Location _end, uint32_t _axis)
 {
-	TileIndex start_tile = TileIndex(_start);
-	TileIndex end_tile = TileIndex(_end);
+	TileIndex start_tile = TileXY(_start.x, _start.y);
+	TileIndex end_tile = TileXY(_end.x, _end.y);
 	Axis axis = Axis(_axis);
+	DoCommandFlags flags{};
+	flags.Set(DoCommandFlag::Execute);
 
-	// Check if the start and end tiles are valid for a straight road line
-	// if (start_tile == end_tile) {
-	// 	// If both tiles are the same, we can build a road at that tile.
-	// 	return BuildRoadAtTile(_start, ROADTYPE_ROAD);
-	// }
-
-	int start_x = TileX(start_tile);
-    int start_y = TileY(start_tile);
-    int end_x = TileX(end_tile);
-    int end_y = TileY(end_tile);
-
-	if (start_x == end_x || start_y == end_y) {
+	if (_start.x == _end.x || _start.y == _end.y) {
         // Valid straight line
-		TileIndex start_index = TileIndex(start_tile);
-		TileIndex end_index = TileIndex(end_tile);
-		DoCommandFlags flags{};
-		flags.Set(DoCommandFlag::Execute);
 		CommandCost cost = CmdBuildLongRoad(
-			flags, // flags
-			end_index, // end tile
-			start_index, // start tile
-			ROADTYPE_ROAD, // road type
-			axis, // axis
-			DRD_NONE, // no disallowed directions
-			false, //
-			false, //
-			1 // ai
+			flags,
+			end_tile,
+			start_tile,
+			ROADTYPE_ROAD,
+			axis,
+			DRD_NONE,
+			false, // start_half
+			false, // end_half
+			true // ai
 		);
 		std::cout << "BuildRoadLine: " << cost.GetCost() << std::endl;
-
-        return true;
+		return cost.Succeeded();
     }
-    return false;
+	return false; // Invalid line, not straight
 }
 
-bool BuildStationAtTile(int _tile, int _is_drive_trough, int _dir)
+bool BuildRoadDepot(Location _tile, uint32_t _dir)
 {
-    TileIndex tile_index = TileIndex(_tile);
+	TileIndex tile = TileXY(_tile.x, _tile.y);
+	DiagDirection ddir = static_cast<DiagDirection>(_dir);
+	DoCommandFlags flags{};
+	flags.Set(DoCommandFlag::Execute);
+	CommandCost cost = CmdBuildRoadDepot(
+		flags,
+		tile,
+		ROADTYPE_ROAD, // always use Road type
+		ddir
+	);
+	return cost.Succeeded();
+}
+
+bool BuildCargoStationAtTile(Location _tile, bool _is_drive_through, uint32_t _dir)
+{
+    TileIndex tile = TileXY(_tile.x, _tile.y);
 	DiagDirection ddir = static_cast<DiagDirection>(_dir);
 	DoCommandFlags flags{};
 	flags.Set(DoCommandFlag::Execute);
 	CommandCost cost = CmdBuildRoadStop(
-		flags, // flags
-		tile_index,
+		flags,
+		tile,
 		1, 1, // width, length
-		RoadStopType::Truck, // always use Bus type
-		_is_drive_trough != 0, // is_drive_through
-		ddir, // entrance direction (default)
-		ROADTYPE_ROAD, // always use ROADTYPE_ROAD
-		RoadStopClassID::ROADSTOP_CLASS_DFLT, // no special class
-		0, // no special index
-		NEW_STATION, // new station
-		false // not adjacent
+		RoadStopType::Truck, // always use Truck type
+		_is_drive_through,
+		ddir,
+		ROADTYPE_ROAD,
+		RoadStopClassID::ROADSTOP_CLASS_DFLT,
+		0, // special index
+		NEW_STATION,
+		false // adjacent
 	);
-	if (cost.Succeeded()) {
-		// If the command was successful, we can assume the station was built.
-		return true;
-	}
-	// If the command was not successful, we return false.
-    return false;
+	return cost.Succeeded();
 }
 
-bool BuildBusStationAtTile(int _tile, int _station_type)
+bool BuildBusStationAtTile(Location _tile, bool _is_drive_through, uint32_t _dir)
+{
+    TileIndex tile = TileXY(_tile.x, _tile.y);
+	DiagDirection ddir = static_cast<DiagDirection>(_dir);
+	DoCommandFlags flags{};
+	flags.Set(DoCommandFlag::Execute);
+	CommandCost cost = CmdBuildRoadStop(
+		flags,
+		tile,
+		1, 1, // width, length
+		RoadStopType::Bus, // always use Bus type
+		_is_drive_through,
+		ddir,
+		ROADTYPE_ROAD,
+		RoadStopClassID::ROADSTOP_CLASS_DFLT,
+		0, // special index
+		NEW_STATION,
+		false // adjacent
+	);
+	return cost.Succeeded();
+}
+
+bool BuyVehicle(uint32_t _vehicle_type, Location _tile)
 {
     return false;
 }
 
-bool BuyVehicle(int _vehicle_type, int _tile)
+bool SendVehicle(uint32_t _vehicle_id, Location _destination_tile)
 {
     return false;
 }
 
-bool SendVehicle(int _vehicle_id, int _destination_tile)
-{
-    return false;
 }
 

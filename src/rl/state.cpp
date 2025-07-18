@@ -4,12 +4,17 @@ std::vector<float> RLState::ToVector() const
 {
     std::vector<float> data;
     for (const auto& city : cities) {
-        data.push_back(static_cast<float>(city.location.value));
+		uint32_t x = city.location.x;
+		uint32_t y = city.location.y;
+        data.push_back(static_cast<float>(x));
+		data.push_back(static_cast<float>(y));
         data.push_back(static_cast<float>(city.population));
     }
     for (const auto& industry : industries) {
-		float tile_as_float = static_cast<float>(industry.location.value);
-        data.push_back(tile_as_float);
+		uint32_t x = industry.location.x;
+		uint32_t y = industry.location.y;
+		data.push_back(static_cast<float>(x));
+		data.push_back(static_cast<float>(y));
         data.push_back(static_cast<float>(industry.type));
 		data.push_back(static_cast<float>(industry.produced_cargos.size())); // number of produced cargos
 		for (const auto& cargo : industry.produced_cargos) {
@@ -21,8 +26,8 @@ std::vector<float> RLState::ToVector() const
 			data.push_back(static_cast<float>(cargo)); // cargo type
 		}
     }
-    // data.push_back(static_cast<float>(current_money));
-    // data.push_back(static_cast<float>(current_year));
+    data.push_back(static_cast<float>(current_money));
+    //data.push_back(static_cast<float>(current_year));
     return data;
 }
 

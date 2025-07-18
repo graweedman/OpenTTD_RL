@@ -51,7 +51,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 set(OTTD_RL_FILES
     ${CMAKE_SOURCE_DIR}/src/rl/communication.cpp
     ${CMAKE_SOURCE_DIR}/src/rl/interface.cpp
-    ${CMAKE_SOURCE_DIR}/src/rl/state.cpp)
+    ${CMAKE_SOURCE_DIR}/src/rl/state.cpp
+    ${CMAKE_SOURCE_DIR}/src/rl/action.cpp
+    ${CMAKE_SOURCE_DIR}/src/rl/action_handler.cpp
+    ${CMAKE_SOURCE_DIR}/src/rl/commands.cpp)
 
 # add_library(openttd_rl ${OTTD_RL_FILES})
 # if(MSVC)

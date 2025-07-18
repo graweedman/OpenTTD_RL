@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <netinet/in.h>
 #endif
 
 #include <iostream>
@@ -20,7 +22,7 @@ public:
 	RLCommunication();
 	~RLCommunication();
 
-	bool Connect(const std::string& host, int port);
+	bool Connect(const std::string &host, int remote_port, int local_port = 0);
 	bool Send(const std::vector<uint8_t>& data);
 	bool Send(const std::vector<float>& data);
 	bool Receive(std::vector<uint8_t>& data, int max_size = 32);

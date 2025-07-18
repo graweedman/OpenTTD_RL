@@ -8,16 +8,23 @@
 #include "../vehicle_cmd.h"
 #include "../order_cmd.h"
 #include "../newgrf_roadstop.h"
+#include "types.h"
 
 #include <iostream>
 
+using namespace rl;
 
+namespace cmd {
 
-bool BuildRoadAtTile(int _tile, int _road_type, int _dir);
-bool BuildRoadLine(int _start, int _end, int _axis);
-bool BuildStationAtTile(int _tile, int _is_drive_trough, int _dir);
-bool BuyVehicle(int _vehicle_type, int _tile);
-bool SendVehicle(int _vehicle_id, int _destination_tile);
+bool BuildRoadAtTile(Location _tile, uint32_t _dir);
+bool BuildRoadLine(Location _start, Location _end, uint32_t _axis);
+bool BuildRoadDepot(Location _tile, uint32_t _dir);
+bool BuildCargoStationAtTile(Location _tile, bool _is_drive_through, uint32_t _dir);
+bool BuildBusStationAtTile(Location _tile, bool _is_drive_through, uint32_t _dir);
+bool BuyVehicle(uint32_t _vehicle_type, Location _tile);
+bool SendVehicle(uint32_t _vehicle_id, Location _destination_tile);
+
+}
 
 
 #endif // RL_INTERFACE_H

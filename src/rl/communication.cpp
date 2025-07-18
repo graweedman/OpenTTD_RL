@@ -17,37 +17,44 @@ RLCommunication::~RLCommunication() {
 #endif
 }
 
-bool RLCommunication::Connect(const std::string &host, int port) {
+bool RLCommunication::Connect(const std::string &host, int remote_port, int local_port) {
 #ifdef _WIN32
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock == INVALID_SOCKET) return false;
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock == INVALID_SOCKET) return false;
 
-	// Set the socket to non-blocking mode
-	// This is necessary for Windows, as it does not support O_NONBLOCK like POSIX systems
 	u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode);
 #else
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sock < 0) return false;
-
-	// Set non-blocking mode
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock < 0) return false;
+    
+    // Set non-blocking mode
     int flags = fcntl(sock, F_GETFL, 0);
-    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+    if (flags == -1) return false;  // Check for error
+    if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1) return false;  // Check for error
 #endif
-	addr = {};
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = inet_addr(host.c_str());
 
-	sockaddr_in local_addr = {};
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_port = htons(port);
-    local_addr.sin_addr.s_addr = INADDR_ANY;
-    if (bind(sock, (sockaddr*)&local_addr, sizeof(local_addr)) < 0) {
+    // Set up remote address
+    addr = {};
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(remote_port);
+    if (inet_aton(host.c_str(), &addr.sin_addr) == 0) {  // Better than inet_addr
         return false;
     }
 
-	connected = true;
+    // Bind to local port (0 = let OS choose, or specify different port)
+    sockaddr_in local_addr = {};
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(local_port);
+    local_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    if (bind(sock, (sockaddr*)&local_addr, sizeof(local_addr)) < 0) {
+        close(sock);  // Clean up on failure
+        sock = -1;
+        return false;
+    }
+
+    connected = true;
     return true;
 }
 
@@ -86,7 +93,7 @@ bool RLCommunication::Receive(std::vector<uint8_t> &data, int max_size) {
 #ifdef _WIN32
 	int fromlen = sizeof(from);
 #else
-	socklen_in fromlen = sizeof(from);
+	socklen_t fromlen = sizeof(from);
 #endif
 	int bytes = recvfrom(
 		sock,

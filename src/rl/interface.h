@@ -10,6 +10,10 @@
 #include "action.h"
 #include "communication.h"
 #include "commands.h"
+#include "action_handler.h"
+#include "types.h"
+
+using namespace rl;
 
 class RLInterface {
 private:
@@ -17,7 +21,7 @@ private:
 	RLCommunication rl_comm;
 
 public:
-	RLInterface(const std::string& host, int port);
+	RLInterface(const std::string& host, int remote_port, int local_port = 0);
 	~RLInterface();
 
 	void CollectState(CompanyID current_company); // Collects state data from the game world
